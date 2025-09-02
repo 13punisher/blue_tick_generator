@@ -3,44 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Instagram Blue Tick Generator</title>
+  <title>Instagram Blue Tick Badge Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       background: #222;
       color: #fff;
-      height: 100vh;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
     }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input, button {
-      padding: 8px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
+
     #canvas {
+      width: 90%;
+      height: auto;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
       border: 1px solid #555;
       border-radius: 12px;
       background: transparent;
     }
+
+    .controls {
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .controls input, .controls button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    .controls button {
+      background: #3897f0;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .controls button:hover {
+      background: #2b80d6;
+    }
   </style>
 </head>
 <body>
+  <canvas id="canvas" width="800" height="800"></canvas>
+
   <div class="controls">
     <input type="file" id="uploadProfile" accept="image/*" />
     <input type="file" id="uploadTick" accept="image/*" />
@@ -48,7 +66,6 @@
     <input type="text" id="username" placeholder="@username" />
     <button id="download">Download PNG</button>
   </div>
-  <canvas id="canvas" width="1200" height="400"></canvas>
 
   <script>
     const canvas = document.getElementById("canvas");
@@ -74,34 +91,70 @@
       if (profileImg) {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(150, 200, 120, 0, Math.PI * 2);
+        ctx.arc(200, 300, 180, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(profileImg, 30, 80, 240, 240);
+        ctx.drawImage(profileImg, 20, 120, 360, 360);
         ctx.restore();
       }
 
       // Draw Name
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 64px Arial";
+      ctx.font = "bold 72px Arial";
       const nameText = nameInput.value || "Your Name";
       const nameWidth = ctx.measureText(nameText).width;
-      ctx.fillText(nameText, 320, 200);
+      ctx.fillText(nameText, 20, 550);
 
       // Draw Username
       ctx.fillStyle = "#ccc";
-      ctx.font = "48px Arial";
-      ctx.fillText(usernameInput.value || "@username", 320, 270);
+      ctx.font = "54px Arial";
+      ctx.fillText(usernameInput.value || "@username", 20, 620);
 
       // Draw custom tick if uploaded
       if (tickImg) {
-        const tickSize = 80; // Adjust size of tick
-        const tickX = 320 + nameWidth + 10;
-        const tickY = 200 - tickSize * 0.8;
+        const tickSize = 100; // Larger for better visibility
+        const tickX = 20 + nameWidth + 20;
+        const tickY = 550 - tickSize * 0.8;
         ctx.drawImage(tickImg, tickX, tickY, tickSize, tickSize);
       }
     }
 
+    // Handle profile image upload
+    uploadProfile.addEventListener("change", (e) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        profileImg = new Image();
+        profileImg.onload = draw;
+        profileImg.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Handle blue tick upload
+    uploadTick.addEventListener("change", (e) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        tickImg = new Image();
+        tickImg.onload = draw;
+        tickImg.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Update text dynamically
+    nameInput.addEventListener("input", draw);
+    usernameInput.addEventListener("input", draw);
+
+    // Download button
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "profile-badge.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+</body>
+</html>
     // Handle profile image upload
     uploadProfile.addEventListener("change", (e) => {
       const reader = new FileReader();
