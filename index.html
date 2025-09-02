@@ -1,8 +1,140 @@
-<div class="controls">
-  <input type="file" id="uploadProfile" accept="image/*" />
-  <input type="file" id="uploadTick" accept="image/*" />
-  <input type="text" id="name" placeholder="Enter Name" />
-  <input type="text" id="username" placeholder="@username" />
-  <button id="download">Download PNG</button>
-</div>
-<canvas id="canvas" width="1200" height="400"></canvas>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instagram Blue Tick Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #222;
+      color: #fff;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    #canvas {
+      border: 1px solid #555;
+      border-radius: 12px;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <input type="file" id="uploadProfile" accept="image/*" />
+    <input type="file" id="uploadTick" accept="image/*" />
+    <input type="text" id="name" placeholder="Enter Name" />
+    <input type="text" id="username" placeholder="@username" />
+    <button id="download">Download PNG</button>
+  </div>
+  <canvas id="canvas" width="1200" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const uploadProfile = document.getElementById("uploadProfile");
+    const uploadTick = document.getElementById("uploadTick");
+    const nameInput = document.getElementById("name");
+    const usernameInput = document.getElementById("username");
+    const downloadBtn = document.getElementById("download");
+
+    let profileImg = null;
+    let tickImg = null;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Transparent background
+      ctx.fillStyle = "rgba(0,0,0,0)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Profile picture circle
+      if (profileImg) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(150, 200, 120, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(profileImg, 30, 80, 240, 240);
+        ctx.restore();
+      }
+
+      // Draw Name
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 64px Arial";
+      const nameText = nameInput.value || "Your Name";
+      const nameWidth = ctx.measureText(nameText).width;
+      ctx.fillText(nameText, 320, 200);
+
+      // Draw Username
+      ctx.fillStyle = "#ccc";
+      ctx.font = "48px Arial";
+      ctx.fillText(usernameInput.value || "@username", 320, 270);
+
+      // Draw custom tick if uploaded
+      if (tickImg) {
+        const tickSize = 80; // Adjust size of tick
+        const tickX = 320 + nameWidth + 10;
+        const tickY = 200 - tickSize * 0.8;
+        ctx.drawImage(tickImg, tickX, tickY, tickSize, tickSize);
+      }
+    }
+
+    // Handle profile image upload
+    uploadProfile.addEventListener("change", (e) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        profileImg = new Image();
+        profileImg.onload = draw;
+        profileImg.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Handle blue tick upload
+    uploadTick.addEventListener("change", (e) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        tickImg = new Image();
+        tickImg.onload = draw;
+        tickImg.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    // Update text dynamically
+    nameInput.addEventListener("input", draw);
+    usernameInput.addEventListener("input", draw);
+
+    // Download button
+    downloadBtn.addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "profile-badge.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+</body>
+</html>
