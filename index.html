@@ -16,6 +16,13 @@
       padding: 10px;
     }
 
+    h1 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      color: #1da1f2;
+      text-align: center;
+    }
+
     canvas {
       width: 95%;
       max-width: 400px;
@@ -59,9 +66,20 @@
     button:hover {
       background-color: #0d8ddb;
     }
+
+    .credits {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Add Title -->
+  <h1>Instagram Blue Tick Generator</h1>
+
   <canvas id="canvas" width="600" height="400"></canvas>
 
   <div class="controls">
@@ -72,7 +90,13 @@
     <button id="download">Download PNG</button>
   </div>
 
+  <!-- Add Credits -->
+  <div class="credits">
+    Made with ❤️ by <strong>Niraj Avhale</strong>
+  </div>
+
   <script>
+    /* ---- your original script remains unchanged ---- */
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
@@ -88,11 +112,9 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Transparent background
       ctx.fillStyle = "rgba(0,0,0,0)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Profile picture circle
       if (profileImg) {
         ctx.save();
         ctx.beginPath();
@@ -103,19 +125,16 @@
         ctx.restore();
       }
 
-      // Draw Name
       ctx.fillStyle = "#fff";
       ctx.font = "bold 40px Arial";
       const nameText = nameInput.value || "Your Name";
       const nameWidth = ctx.measureText(nameText).width;
       ctx.fillText(nameText, 200, 200);
 
-      // Draw Username
       ctx.fillStyle = "#ccc";
       ctx.font = "28px Arial";
       ctx.fillText(usernameInput.value || "@username", 200, 250);
 
-      // Draw Tick
       if (tickImg) {
         const tickSize = 50;
         const tickX = 200 + nameWidth + 10;
@@ -124,7 +143,6 @@
       }
     }
 
-    // Handle profile image upload
     uploadProfile.addEventListener("change", (e) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -135,7 +153,6 @@
       reader.readAsDataURL(e.target.files[0]);
     });
 
-    // Handle blue tick upload
     uploadTick.addEventListener("change", (e) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -146,11 +163,9 @@
       reader.readAsDataURL(e.target.files[0]);
     });
 
-    // Update text dynamically
     nameInput.addEventListener("input", draw);
     usernameInput.addEventListener("input", draw);
 
-    // Download button
     downloadBtn.addEventListener("click", () => {
       const link = document.createElement("a");
       link.download = "profile-badge.png";
@@ -159,4 +174,4 @@
     });
   </script>
 </body>
-</html>      
+</html>
