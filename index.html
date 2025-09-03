@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instagram Blue Tick Generator</title>
+  <title>Profile Badge Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
 
     canvas {
       width: 95%;
-      max-width: 600px;
+      max-width: 400px;
       height: auto;
       border: 1px solid #555;
       border-radius: 12px;
@@ -80,7 +80,11 @@
   <!-- Title -->
   <h1>Instagram Blue Tick Generator</h1>
 
-  <canvas id="canvas"></canvas>
+  <!-- Visible Preview Canvas -->
+  <canvas id="canvas" width="600" height="400"></canvas>
+
+  <!-- Hidden High-Res Canvas -->
+  <canvas id="hdCanvas" width="1200" height="800" style="display:none;"></canvas>
 
   <div class="controls">
     <input type="file" id="uploadProfile" accept="image/*" />
@@ -98,6 +102,9 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
+    const hdCanvas = document.getElementById("hdCanvas");
+    const hdCtx = hdCanvas.getContext("2d");
+
     const uploadProfile = document.getElementById("uploadProfile");
     const nameInput = document.getElementById("name");
     const usernameInput = document.getElementById("username");
@@ -105,104 +112,77 @@
 
     let profileImg = null;
 
-    // Hosted tick image (Base64 fallback here)
+    // Hosted tick image
     const tickImg = new Image();
-    tickImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAA..."; 
-    tickImg.onload = draw;
+    tickImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAA..."; // shortened for readability
+    tickImg.onload = () => {
+      draw(ctx, canvas.width, canvas.height);
+    };
 
-    // Resize canvas responsively
-    function resizeCanvas() {
-      const containerWidth = Math.min(window.innerWidth * 0.95, 600);
-      canvas.width = containerWidth;
-      canvas.height = containerWidth * 2 / 3; // aspect ratio
-      draw();
-    }
-    window.addEventListener("resize", resizeCanvas);
+    function draw(targetCtx, w, h) {
+      targetCtx.clearRect(0, 0, w, h);
+      targetCtx.fillStyle = "rgba(0,0,0,0)";
+      targetCtx.fillRect(0, 0, w, h);
 
-    // Main draw function
-    function draw(customCtx = ctx) {
-      customCtx.clearRect(0, 0, canvas.width, canvas.height);
-
+      // Profile image
       if (profileImg) {
-        const centerX = canvas.width * 0.17;
-        const centerY = canvas.height * 0.5;
-        const radius = canvas.width * 0.14;
-
-        // Gradient border
-        const gradient = customCtx.createLinearGradient(
-          centerX - radius, centerY - radius,
-          centerX + radius, centerY + radius
-        );
-        gradient.addColorStop(0, "#feda75");
-        gradient.addColorStop(0.5, "#fa7e1e");
-        gradient.addColorStop(1, "#d62976");
-
-        customCtx.beginPath();
-        customCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        customCtx.fillStyle = gradient;
-        customCtx.fill();
-
-        // Profile image clipped
-        customCtx.save();
-        customCtx.beginPath();
-        customCtx.arc(centerX, centerY, radius - 6, 0, Math.PI * 2);
-        customCtx.clip();
-        customCtx.drawImage(profileImg, centerX - radius + 6, centerY - radius + 6, (radius - 6) * 2, (radius - 6) * 2);
-        customCtx.restore();
+        targetCtx.save();
+        targetCtx.beginPath();
+        targetCtx.arc(w * 0.17, h * 0.5, h * 0.2, 0, Math.PI * 2);
+        targetCtx.closePath();
+        targetCtx.clip();
+        targetCtx.drawImage(profileImg, w * 0.03, h * 0.3, h * 0.4, h * 0.4);
+        targetCtx.restore();
       }
 
       // Name
-      customCtx.fillStyle = "#fff";
-      customCtx.font = "bold 40px Arial";
+      targetCtx.fillStyle = "#fff";
+      targetCtx.font = `bold ${h * 0.1}px Arial`;
       const nameText = nameInput.value || "Your Name";
-      const nameWidth = customCtx.measureText(nameText).width;
-      customCtx.fillText(nameText, canvas.width * 0.35, canvas.height * 0.45);
+      const nameWidth = targetCtx.measureText(nameText).width;
+      targetCtx.fillText(nameText, w * 0.35, h * 0.5);
 
       // Username
-      customCtx.fillStyle = "#ccc";
-      customCtx.font = "28px Arial";
-      customCtx.fillText(usernameInput.value || "@username", canvas.width * 0.35, canvas.height * 0.6);
+      targetCtx.fillStyle = "#ccc";
+      targetCtx.font = `${h * 0.07}px Arial`;
+      targetCtx.fillText(usernameInput.value || "@username", w * 0.35, h * 0.63);
 
       // Tick
       if (tickImg.complete) {
-        const tickSize = canvas.width * 0.08;
-        const tickX = canvas.width * 0.35 + nameWidth + 10;
-        const tickY = canvas.height * 0.34;
-        customCtx.drawImage(tickImg, tickX, tickY, tickSize, tickSize);
+        const tickSize = h * 0.12;
+        const tickX = w * 0.35 + nameWidth + 10;
+        const tickY = h * 0.36;
+        targetCtx.drawImage(tickImg, tickX, tickY, tickSize, tickSize);
       }
     }
 
-    // Handle profile upload
+    // For preview
+    function redraw() {
+      draw(ctx, canvas.width, canvas.height);
+    }
+
     uploadProfile.addEventListener("change", (e) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         profileImg = new Image();
-        profileImg.onload = draw;
+        profileImg.onload = redraw;
         profileImg.src = event.target.result;
       };
       reader.readAsDataURL(e.target.files[0]);
     });
 
-    // Redraw on text input
-    nameInput.addEventListener("input", draw);
-    usernameInput.addEventListener("input", draw);
+    nameInput.addEventListener("input", redraw);
+    usernameInput.addEventListener("input", redraw);
 
-    // High resolution download
     downloadBtn.addEventListener("click", () => {
-      const tempCanvas = document.createElement("canvas");
-      tempCanvas.width = canvas.width * 2;
-      tempCanvas.height = canvas.height * 2;
-      const tempCtx = tempCanvas.getContext("2d");
-      tempCtx.scale(2, 2);
-      draw(tempCtx);
-
+      draw(hdCtx, hdCanvas.width, hdCanvas.height); // draw at high-res
       const link = document.createElement("a");
       link.download = "profile-badge.png";
-      link.href = tempCanvas.toDataURL("image/png");
+      link.href = hdCanvas.toDataURL("image/png");
       link.click();
     });
 
-    resizeCanvas(); // Initial draw
+    redraw(); // Initial draw
   </script>
 </body>
 </html>
