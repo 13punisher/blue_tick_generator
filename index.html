@@ -77,7 +77,6 @@
 </head>
 <body>
 
-  <!-- Title -->
   <h1>Instagram Blue Tick Generator</h1>
 
   <canvas id="canvas" width="600" height="400"></canvas>
@@ -89,7 +88,6 @@
     <button id="download">Download PNG</button>
   </div>
 
-  <!-- Credits -->
   <div class="credits">
     Made with ❤️ by <strong>Niraj</strong>
   </div>
@@ -157,14 +155,51 @@
     nameInput.addEventListener("input", draw);
     usernameInput.addEventListener("input", draw);
 
+    // HD Download
     downloadBtn.addEventListener("click", () => {
+      const tempCanvas = document.createElement("canvas");
+      const scale = 3; // HD scale
+      tempCanvas.width = canvas.width * scale;
+      tempCanvas.height = canvas.height * scale;
+      const tempCtx = tempCanvas.getContext("2d");
+
+      tempCtx.fillStyle = "rgba(0,0,0,0)";
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+      if (profileImg) {
+        tempCtx.save();
+        tempCtx.beginPath();
+        tempCtx.arc(100 * scale, 200 * scale, 80 * scale, 0, Math.PI * 2);
+        tempCtx.closePath();
+        tempCtx.clip();
+        tempCtx.drawImage(profileImg, 20 * scale, 120 * scale, 160 * scale, 160 * scale);
+        tempCtx.restore();
+      }
+
+      tempCtx.fillStyle = "#fff";
+      tempCtx.font = `bold ${40 * scale}px Arial`;
+      const nameText = nameInput.value || "Your Name";
+      const nameWidth = tempCtx.measureText(nameText).width;
+      tempCtx.fillText(nameText, 200 * scale, 200 * scale);
+
+      tempCtx.fillStyle = "#ccc";
+      tempCtx.font = `${28 * scale}px Arial`;
+      tempCtx.fillText(usernameInput.value || "@username", 200 * scale, 250 * scale);
+
+      if (tickImg.complete) {
+        const tickSize = 50 * scale;
+        const tickX = 200 * scale + nameWidth + 10 * scale;
+        const tickY = 160 * scale;
+        tempCtx.drawImage(tickImg, tickX, tickY, tickSize, tickSize);
+      }
+
       const link = document.createElement("a");
-      link.download = "profile-badge.png";
-      link.href = canvas.toDataURL("image/png");
+      link.download = "profile-badge-HD.png";
+      link.href = tempCanvas.toDataURL("image/png");
       link.click();
     });
 
-    draw(); // Initial draw
+    draw(); // initial render
   </script>
 </body>
-</html>  
+</html
